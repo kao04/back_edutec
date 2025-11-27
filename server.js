@@ -11,31 +11,22 @@ const pool = mysql.createPool({
     host: 'benserverplex.ddns.net',
     user: 'alunos',
     password: 'senhaAlunos',
-    database: 'ecoseed',
+    database: 'ecoseed', 
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
-(async () => {
+app.get('/', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        console.log("Conectado ao MySQL com sucesso.");
+        const sql = `SELECT id, nome, email, score FROM users`;
+        const [rows] = await pool.execute(sql);
         
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nome VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL UNIQUE,
-                senha VARCHAR(255) NOT NULL,
-                score INT DEFAULT 0
-            )
-        `);
-        connection.release();
+        res.status(200).json(rows);
     } catch (error) {
-        console.error("Erro na conexão:", error.message);
+        res.status(500).json({ error: "Erro ao buscar dados: " + error.message });
     }
-})();
+});
 
 app.post('/cadastro', async (req, res) => {
     const { nome, email, senha } = req.body;

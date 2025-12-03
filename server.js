@@ -11,23 +11,27 @@ const pool = mysql.createPool({
     host: 'benserverplex.ddns.net',
     user: 'alunos',
     password: 'senhaAlunos',
-    database: 'ecoseed', 
+    database: 'ecoseed', // Se der erro, troque por 'web_02ma'
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
+// --- ROTA INICIAL: Mostra JSON com todos os usuários (Igual à sua imagem) ---
 app.get('/', async (req, res) => {
     try {
+        // Seleciona todos os dados (exceto a senha por segurança)
         const sql = `SELECT id, nome, email, score FROM users`;
         const [rows] = await pool.execute(sql);
         
+        // Retorna direto o JSON para a tela
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ error: "Erro ao buscar dados: " + error.message });
     }
 });
 
+// --- ROTA: POST /cadastro ---
 app.post('/cadastro', async (req, res) => {
     const { nome, email, senha } = req.body;
 
@@ -47,6 +51,7 @@ app.post('/cadastro', async (req, res) => {
     }
 });
 
+// --- ROTA: POST /login ---
 app.post('/login', async (req, res) => {
     const { email, senha } = req.body;
 
@@ -70,6 +75,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// --- ROTA: PUT /score ---
 app.put('/score', async (req, res) => {
     const { userId, score } = req.body;
 
@@ -87,6 +93,7 @@ app.put('/score', async (req, res) => {
     }
 });
 
+// --- ROTA: GET /ranking ---
 app.get('/ranking', async (req, res) => {
     try {
         const sql = `SELECT nome, score FROM users ORDER BY score DESC LIMIT 10`;
@@ -97,9 +104,6 @@ app.get('/ranking', async (req, res) => {
     }
 });
 
-
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
-
-module.exports = app;
